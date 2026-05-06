@@ -1,0 +1,49 @@
+#
+# Copyright IBM Corp All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: couchdb1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: couchdb1
+  template:
+    metadata:
+      labels:
+        app: couchdb1
+    spec:
+      containers:
+        - name: couchdb
+          image: couchdb:${COUCHDB_VERSION}
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: COUCHDB_USER
+              value: admin
+            - name: COUCHDB_PASSWORD
+              value: adminpw
+          ports:
+            - containerPort: 5984
+          volumeMounts:
+            - name: couchdb-data
+              mountPath: /opt/couchdb/data
+      volumes:
+        - name: couchdb-data
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: couchdb1
+spec:
+  ports:
+    - name: http
+      port: 5984
+      protocol: TCP
+  selector:
+    app: couchdb1

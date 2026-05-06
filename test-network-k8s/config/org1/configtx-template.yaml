@@ -1,0 +1,134 @@
+# IMPORTANT:
+# DO NOT ADD "Channel:" OR "&ChannelDefaults"
+# These break configtxgen in Fabric v2.5+
+Organizations:
+  - &OrdererOrg
+    Name: OrdererOrg
+    ID: OrdererMSP
+    MSPDir: ${TEMP_DIR_CONFIG}/channel-msp/ordererOrganizations/org1/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('OrdererMSP.member')"
+      Writers:
+        Type: Signature
+        Rule: "OR('OrdererMSP.member')"
+      Admins:
+        Type: Signature
+        Rule: "OR('OrdererMSP.admin')"
+    OrdererEndpoints:
+      - org1-orderer.${ORG1_NS}.svc.cluster.local:6050
+
+  - &Org1
+    Name: Org1MSP
+    ID: Org1MSP
+    MSPDir: ${TEMP_DIR_CONFIG}/channel-msp/peerOrganizations/org1/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('Org1MSP.admin','Org1MSP.peer','Org1MSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('Org1MSP.admin','Org1MSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('Org1MSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('Org1MSP.peer')"
+    AnchorPeers:
+      - Host: org1-peer0.${ORG1_NS}.svc.cluster.local
+        Port: 7051
+
+Capabilities:
+  Channel: &ChannelCapabilities
+    V2_0: true
+  Orderer: &OrdererCapabilities
+    V2_0: true
+  Application: &ApplicationCapabilities
+    V2_0: true
+
+Application: &ApplicationDefaults
+  Organizations:
+  Policies:
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+    LifecycleEndorsement:
+      Type: Signature
+      Rule: "OR('Org1MSP.peer')"
+    Endorsement:
+      Type: Signature
+      Rule: "OR('Org1MSP.peer')"
+  Capabilities:
+    <<: *ApplicationCapabilities
+
+Orderer: &OrdererDefaults
+  OrdererType: etcdraft
+  Addresses:
+    - org1-orderer.${ORG1_NS}.svc.cluster.local:6050
+  EtcdRaft:
+    Consenters:
+      - Host: org1-orderer.${ORG1_NS}.svc.cluster.local
+        Port: 6050
+        ClientTLSCert: ${TEMP_DIR_CONFIG}/channel-msp/ordererOrganizations/org1/orderers/org1-orderer/tls/signcerts/tls-cert.pem
+        ServerTLSCert: ${TEMP_DIR_CONFIG}/channel-msp/ordererOrganizations/org1/orderers/org1-orderer/tls/signcerts/tls-cert.pem
+    Options:
+      TickInterval: 2500ms
+      ElectionTick: 5
+      HeartbeatTick: 1
+      MaxInflightBlocks: 5
+      SnapshotIntervalSize: 16 MB
+  BatchTimeout: 2s
+  BatchSize:
+    MaxMessageCount: 10
+    AbsoluteMaxBytes: 99 MB
+    PreferredMaxBytes: 512 KB
+  Organizations:
+  Policies:
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+    BlockValidation:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+  Capabilities:
+    <<: *OrdererCapabilities
+
+Profiles:
+  OneOrgApplicationGenesis:
+    Capabilities:
+      <<: *ChannelCapabilities
+
+    Policies:
+      Readers:
+        Type: ImplicitMeta
+        Rule: "ANY Readers"
+      Writers:
+        Type: ImplicitMeta
+        Rule: "ANY Writers"
+      Admins:
+        Type: ImplicitMeta
+        Rule: "MAJORITY Admins"
+
+    Orderer:
+      <<: *OrdererDefaults
+      Organizations:
+        - *OrdererOrg
+
+    Application:
+      <<: *ApplicationDefaults
+      Organizations:
+        - *Org1

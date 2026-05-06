@@ -1,6 +1,6 @@
-# 🚀 Hyperledger Fabric on Kubernetes with CI/CD & Monitoring
+#  Hyperledger Fabric on Kubernetes with CI/CD & Monitoring
 
-## 📌 Overview
+##  Overview
 
 This project demonstrates an **end-to-end enterprise-grade deployment of a Hyperledger Fabric network on Kubernetes**, integrated with **CI/CD (Jenkins)** and **observability (Prometheus + Grafana)**.
 
@@ -8,7 +8,7 @@ It showcases a **real-world DevOps + Blockchain implementation**, covering netwo
 
 ---
 
-## 🏗️ Architecture Summary
+##  Architecture Summary
 
 * **Blockchain Framework:** Hyperledger Fabric (v2.5)
 * **Container Orchestration:** Kubernetes (KIND cluster)
@@ -18,7 +18,7 @@ It showcases a **real-world DevOps + Blockchain implementation**, covering netwo
 
 ---
 
-## ⚙️ Network Topology
+##  Network Topology
 
 | Component    | Count | Description                      |
 | ------------ | ----- | -------------------------------- |
@@ -32,11 +32,11 @@ It showcases a **real-world DevOps + Blockchain implementation**, covering netwo
 
 ---
 
-## 🔐 Certificate Authority
+##  Certificate Authority
 
 This setup uses:
 
-👉 **Fabric CA (not cryptogen)**
+ **Fabric CA (not cryptogen)**
 
 * Dynamic identity management
 * Supports enrollment & registration
@@ -44,9 +44,9 @@ This setup uses:
 
 ---
 
-## 🧱 Manual Deployment Workflow
+##  Manual Deployment Workflow
 
-### 1️⃣ Environment Setup
+### 1️ Environment Setup
 
 * Provisioned VM using Vagrant (Ubuntu 22.04)
 * Installed:
@@ -58,7 +58,7 @@ This setup uses:
 
 ---
 
-### 2️⃣ Network Configuration
+### 2️ Network Configuration
 
 * Kubernetes manifests created for:
 
@@ -73,7 +73,7 @@ This setup uses:
 
 ---
 
-### 3️⃣ Certificate Generation
+### 3️ Certificate Generation
 
 * TLS certificates via cert-manager
 * Identity certificates via Fabric CA:
@@ -83,7 +83,7 @@ This setup uses:
 
 ---
 
-### 4️⃣ Genesis Block & Channel Config
+### 4️ Genesis Block & Channel Config
 
 * Generated using `configtxgen`
 * Defined:
@@ -94,7 +94,7 @@ This setup uses:
 
 ---
 
-### 5️⃣ Network Deployment
+### 5️ Network Deployment
 
 ```bash
 ./network up
@@ -110,7 +110,7 @@ This setup uses:
 
 ---
 
-### 6️⃣ Channel Creation
+### 6️ Channel Creation
 
 ```bash
 ./network channel create
@@ -125,13 +125,13 @@ This setup uses:
 
 ---
 
-### 7️⃣ Chaincode Deployment
+### 7️ Chaincode Deployment
 
 ```bash
 ./network chaincode deploy asset-transfer-basic ../asset-transfer-basic/chaincode-java
 ```
 
-✔ Workflow:
+ Workflow:
 
 * Build Docker image
 * Push to local registry
@@ -141,7 +141,7 @@ This setup uses:
 
 ---
 
-### 8️⃣ Transaction Testing
+### 8️ Transaction Testing
 
 #### Invoke
 
@@ -155,7 +155,7 @@ This setup uses:
 ./network chaincode query asset-transfer-basic '{"Args":["ReadAsset","asset1"]}'
 ```
 
-✔ Output:
+ Output:
 
 ```json
 {
@@ -168,7 +168,7 @@ This setup uses:
 
 ---
 
-## 📊 Monitoring Implementation
+##  Monitoring Implementation
 
 ### Stack Deployed
 
@@ -209,7 +209,7 @@ CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:9443
 
 ---
 
-## 🔄 CI/CD Implementation
+##  CI/CD Implementation
 
 ### Tool: Jenkins
 
@@ -225,41 +225,16 @@ Pipeline automates:
 
 ### Pipeline Flow
 
-```groovy
-pipeline {
-  agent any
-
-  stages {
-    stage('Network Up') {
-      steps {
-        sh './network up'
-      }
-    }
-
-    stage('Create Channel') {
-      steps {
-        sh './network channel create'
-      }
-    }
-
-    stage('Deploy Chaincode') {
-      steps {
-        sh './network chaincode deploy asset-transfer-basic ../asset-transfer-basic/chaincode-java'
-      }
-    }
-
-    stage('Test Transaction') {
-      steps {
-        sh './network chaincode invoke asset-transfer-basic \'{"Args":["InitLedger"]}\''
-      }
-    }
-  }
-}
-```
-
+1. Environment setup
+2. Pre-checks
+3. Network up
+4. Channel create
+5. Deploy chaincode
+6. Invoke Transaction
+7. Query Transaction
 ---
 
-## 🔐 Key Challenges Solved
+##  Key Challenges Solved
 
 | Problem                | Solution                                           |
 | ---------------------- | -------------------------------------------------- |
@@ -271,7 +246,7 @@ pipeline {
 
 ---
 
-## 🚀 Key Learnings
+##  Key Learnings
 
 * Fabric on Kubernetes requires **DNS consistency**
 * Fabric CA is essential for **production-grade identity**
@@ -280,7 +255,7 @@ pipeline {
 
 ---
 
-## 📈 Future Enhancements
+##  Future Enhancements
 
 * Multi-org network (Org2, Org3)
 * GitOps with ArgoCD
@@ -290,7 +265,7 @@ pipeline {
 
 ---
 
-## 🏁 Conclusion
+##  Conclusion
 
 This project demonstrates a **complete lifecycle of blockchain deployment** integrated with:
 

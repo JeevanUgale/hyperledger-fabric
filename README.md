@@ -1,74 +1,303 @@
-[//]: # (SPDX-License-Identifier: CC-BY-4.0)
+# 🚀 Hyperledger Fabric on Kubernetes with CI/CD & Monitoring
 
-# Hyperledger Fabric Samples
+## 📌 Overview
 
-You can use Fabric samples to get started working with Hyperledger Fabric, explore important Fabric features, and learn how to build applications that can interact with blockchain networks using the Fabric SDKs. To learn more about Hyperledger Fabric, visit the [Fabric documentation](https://hyperledger-fabric.readthedocs.io/en/latest).
+This project demonstrates an **end-to-end enterprise-grade deployment of a Hyperledger Fabric network on Kubernetes**, integrated with **CI/CD (Jenkins)** and **observability (Prometheus + Grafana)**.
 
-Note that this branch contains samples for the latest Fabric release. For older Fabric versions, refer to the corresponding branches:
+It showcases a **real-world DevOps + Blockchain implementation**, covering network provisioning, automation, and operational visibility.
 
-- [release-2.2](https://github.com/hyperledger/fabric-samples/tree/release-2.2)
-- [release-1.4](https://github.com/hyperledger/fabric-samples/tree/release-1.4)
+---
 
-## Getting started with the Fabric samples
+## 🏗️ Architecture Summary
 
-To use the Fabric samples, you need to download the Fabric Docker images and the Fabric CLI tools. First, make sure that you have installed all of the [Fabric prerequisites](https://hyperledger-fabric.readthedocs.io/en/latest/prereqs.html). You can then follow the instructions to [Install the Fabric Samples, Binaries, and Docker Images](https://hyperledger-fabric.readthedocs.io/en/latest/install.html) in the Fabric documentation. In addition to downloading the Fabric images and tool binaries, the Fabric samples will also be cloned to your local machine.
+* **Blockchain Framework:** Hyperledger Fabric (v2.5)
+* **Container Orchestration:** Kubernetes (KIND cluster)
+* **CI/CD:** Jenkins
+* **Monitoring:** Prometheus + Grafana
+* **Database:** CouchDB (state database)
 
-## Test network
+---
 
-The [Fabric test network](test-network) in the samples repository provides a Docker Compose based test network with two
-Organization peers and an ordering service node. You can use it on your local machine to run the samples listed below.
-You can also use it to deploy and test your own Fabric chaincodes and applications. To get started, see
-the [test network tutorial](https://hyperledger-fabric.readthedocs.io/en/latest/test_network.html).
+## ⚙️ Network Topology
 
-The [Kubernetes Test Network](test-network-k8s) sample builds upon the Compose network, constructing a Fabric
-network with peer, orderer, and CA infrastructure nodes running on Kubernetes.  In addition to providing a sample
-Kubernetes guide, the Kube test network can be used as a platform to author and debug _cloud ready_ Fabric Client
-applications on a development or CI workstation.
+| Component    | Count | Description                      |
+| ------------ | ----- | -------------------------------- |
+| Organization | 1     | org1                             |
+| Fabric CA    | 1     | Identity & certificate authority |
+| Orderer      | 1     | Channel ordering service         |
+| Peers        | 2     | peer0, peer1                     |
+| CouchDB      | 2     | One per peer                     |
+| Channel      | 1     | `mychannel`                      |
+| Chaincode    | 1     | asset-transfer-basic             |
 
+---
 
-## Asset transfer samples and tutorials
+## 🔐 Certificate Authority
 
-The asset transfer series provides a series of sample smart contracts and applications to demonstrate how to store and transfer assets using Hyperledger Fabric.
-Each sample and associated tutorial in the series demonstrates a different core capability in Hyperledger Fabric. The **Basic** sample provides an introduction on how
-to write smart contracts and how to interact with a Fabric network using the Fabric SDKs. The **Ledger queries**, **Private data**, and **State-based endorsement**
-samples demonstrate these additional capabilities. Finally, the **Secured agreement** sample demonstrates how to bring all the capabilities together to securely
-transfer an asset in a more realistic transfer scenario.
+This setup uses:
 
-|  **Smart Contract** | **Description** | **Tutorial** | **Smart contract languages** | **Application languages** |
-| -----------|------------------------------|----------|---------|---------|
-| [Basic](asset-transfer-basic) | The Basic sample smart contract that allows you to create and transfer an asset by putting data on the ledger and retrieving it. This sample is recommended for new Fabric users. | [Writing your first application](https://hyperledger-fabric.readthedocs.io/en/latest/write_first_app.html) | Go, JavaScript, TypeScript, Java | Go, TypeScript, Java |
-| [Ledger queries](asset-transfer-ledger-queries) | The ledger queries sample demonstrates range queries and transaction updates using range queries (applicable for both LevelDB and CouchDB state databases), and how to deploy an index with your chaincode to support JSON queries (applicable for CouchDB state database only). | [Using CouchDB](https://hyperledger-fabric.readthedocs.io/en/latest/couchdb_tutorial.html) | Go, JavaScript | Java, JavaScript |
-| [Private data](asset-transfer-private-data) | This sample demonstrates the use of private data collections, how to manage private data collections with the chaincode lifecycle, and how the private data hash can be used to verify private data on the ledger. It also demonstrates how to control asset updates and transfers using client-based ownership and access control. | [Using Private Data](https://hyperledger-fabric.readthedocs.io/en/latest/private_data_tutorial.html) | Go, TypeScript, Java | TypeScript |
-| [State-Based Endorsement](asset-transfer-sbe) | This sample demonstrates how to override the chaincode-level endorsement policy to set endorsement policies at the key-level (data/asset level). | [Using State-based endorsement](https://github.com/hyperledger/fabric-samples/tree/main/asset-transfer-sbe) | Java, TypeScript | JavaScript |
-| [Secured agreement](asset-transfer-secured-agreement) | Smart contract that uses implicit private data collections, state-based endorsement, and organization-based ownership and access control to keep data private and securely transfer an asset with the consent of both the current owner and buyer. | [Secured asset transfer](https://hyperledger-fabric.readthedocs.io/en/latest/secured_asset_transfer/secured_private_asset_transfer_tutorial.html)  | Go | TypeScript |
-| [Events](asset-transfer-events) | The events sample demonstrates how smart contracts can emit events that are read by the applications interacting with the network. | [README](asset-transfer-events/README.md)  | Go, JavaScript, Java | Go, TypeScript, Java |
-| [Attribute-based access control](asset-transfer-abac) | Demonstrates the use of attribute and identity based access control using a simple asset transfer scenario | [README](asset-transfer-abac/README.md)  | Go | _None_ |
+👉 **Fabric CA (not cryptogen)**
 
-## Full stack asset transfer guide
+* Dynamic identity management
+* Supports enrollment & registration
+* Production-aligned approach
 
-The [full stack asset transfer guide](full-stack-asset-transfer-guide#readme) workshop demonstrates how a generic asset transfer solution for Hyperledger Fabric can be developed and deployed. This covers chaincode development, client application development, and deployment to a production-like environment.
+---
 
-## Additional samples
+## 🧱 Manual Deployment Workflow
 
-Additional samples demonstrate various Fabric use cases and application patterns.
+### 1️⃣ Environment Setup
 
-|  **Sample** | **Description** | **Documentation** |
-| -------------|------------------------------|------------------|
-| [Off chain data](off_chain_data) | Learn how to use block events to build an off-chain database for reporting and analytics. | [Peer channel-based event services](https://hyperledger-fabric.readthedocs.io/en/latest/peer_event_services.html) |
-| [Token SDK](token-sdk) | Sample REST API around the Hyperledger Labs [Token SDK](https://github.com/hyperledger-labs/fabric-token-sdk) for privacy friendly (zero knowledge proof) UTXO transactions. | [README](token-sdk/README.md) |
-| [Token ERC-20](token-erc-20) | Smart contract demonstrating how to create and transfer fungible tokens using an account-based model. | [README](token-erc-20/README.md) |
-| [Token UTXO](token-utxo) | Smart contract demonstrating how to create and transfer fungible tokens using a UTXO (unspent transaction output) model. | [README](token-utxo/README.md) |
-| [Token ERC-1155](token-erc-1155) | Smart contract demonstrating how to create and transfer multiple tokens (both fungible and non-fungible) using an account based model. | [README](token-erc-1155/README.md) |
-| [Token ERC-721](token-erc-721) | Smart contract demonstrating how to create and transfer non-fungible tokens using an account-based model. | [README](token-erc-721/README.md) |
-| [High throughput](high-throughput) | Learn how you can design your smart contract to avoid transaction collisions in high volume environments. | [README](high-throughput/README.md) |
-| [Simple Auction](auction-simple) | Run an auction where bids are kept private until the auction is closed, after which users can reveal their bid. | [README](auction-simple/README.md) |
-| [Dutch Auction](auction-dutch) | Run an auction in which multiple items of the same type can be sold to more than one buyer. This example also includes the ability to add an auditor organization. | [README](auction-dutch/README.md) |
+* Provisioned VM using Vagrant (Ubuntu 22.04)
+* Installed:
 
+  * Docker
+  * Kubernetes (KIND)
+  * Helm
+  * Fabric binaries & images
 
-## License <a name="license"></a>
+---
 
-Hyperledger Project source code files are made available under the Apache
-License, Version 2.0 (Apache-2.0), located in the [LICENSE](LICENSE) file.
-Hyperledger Project documentation files are made available under the Creative
-Commons Attribution 4.0 International License (CC-BY-4.0), available at http://creativecommons.org/licenses/by/4.0/.
-# hyperledger-fabric
+### 2️⃣ Network Configuration
+
+* Kubernetes manifests created for:
+
+  * Orderer
+  * Peers
+  * CouchDB
+* Internal DNS configured:
+
+  ```bash
+  org1-peer0.test-network.svc.cluster.local
+  ```
+
+---
+
+### 3️⃣ Certificate Generation
+
+* TLS certificates via cert-manager
+* Identity certificates via Fabric CA:
+
+  * Bootstrap admin enrollment
+  * Org admin registration
+
+---
+
+### 4️⃣ Genesis Block & Channel Config
+
+* Generated using `configtxgen`
+* Defined:
+
+  * MSPs
+  * Policies
+  * Orderer configuration
+
+---
+
+### 5️⃣ Network Deployment
+
+```bash
+./network up
+```
+
+✔ Creates:
+
+* Namespace
+* CA
+* Orderer
+* Peers
+* CouchDB
+
+---
+
+### 6️⃣ Channel Creation
+
+```bash
+./network channel create
+```
+
+✔ Steps:
+
+* Register & enroll admins
+* Generate genesis block
+* Join orderer
+* Join peers
+
+---
+
+### 7️⃣ Chaincode Deployment
+
+```bash
+./network chaincode deploy asset-transfer-basic ../asset-transfer-basic/chaincode-java
+```
+
+✔ Workflow:
+
+* Build Docker image
+* Push to local registry
+* Package (CCaaS)
+* Install on peers
+* Approve & commit
+
+---
+
+### 8️⃣ Transaction Testing
+
+#### Invoke
+
+```bash
+./network chaincode invoke asset-transfer-basic '{"Args":["InitLedger"]}'
+```
+
+#### Query
+
+```bash
+./network chaincode query asset-transfer-basic '{"Args":["ReadAsset","asset1"]}'
+```
+
+✔ Output:
+
+```json
+{
+  "owner": "Tomoko",
+  "color": "blue",
+  "size": 5,
+  "appraisedValue": 300
+}
+```
+
+---
+
+## 📊 Monitoring Implementation
+
+### Stack Deployed
+
+* Prometheus (via Helm)
+* Grafana
+
+```bash
+helm install prometheus prometheus-community/kube-prometheus-stack -n monitoring
+```
+
+---
+
+### ServiceMonitor Configuration
+
+Custom ServiceMonitor created to scrape:
+
+* Peers (`operations` port)
+* Orderer (`8443`)
+* Fabric CA
+
+```yaml
+endpoints:
+  - port: operations
+    path: /metrics
+    interval: 15s
+```
+
+---
+
+### Metrics Enabled
+
+Configured in components:
+
+```bash
+ORDERER_METRICS_PROVIDER=prometheus
+CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:9443
+```
+
+---
+
+## 🔄 CI/CD Implementation
+
+### Tool: Jenkins
+
+Pipeline automates:
+
+1. Infrastructure bootstrap
+2. Network deployment
+3. Channel creation
+4. Chaincode deployment
+5. Transaction validation
+
+---
+
+### Pipeline Flow
+
+```groovy
+pipeline {
+  agent any
+
+  stages {
+    stage('Network Up') {
+      steps {
+        sh './network up'
+      }
+    }
+
+    stage('Create Channel') {
+      steps {
+        sh './network channel create'
+      }
+    }
+
+    stage('Deploy Chaincode') {
+      steps {
+        sh './network chaincode deploy asset-transfer-basic ../asset-transfer-basic/chaincode-java'
+      }
+    }
+
+    stage('Test Transaction') {
+      steps {
+        sh './network chaincode invoke asset-transfer-basic \'{"Args":["InitLedger"]}\''
+      }
+    }
+  }
+}
+```
+
+---
+
+## 🔐 Key Challenges Solved
+
+| Problem                | Solution                                           |
+| ---------------------- | -------------------------------------------------- |
+| DNS resolution failure | Switched to K8s internal DNS (`svc.cluster.local`) |
+| TLS & CA integration   | Used cert-manager + Fabric CA                      |
+| Service discovery      | Kubernetes services + ServiceMonitor               |
+| SSH issues in Jenkins  | Fixed Vagrant networking & keys                    |
+| Metrics visibility     | Enabled Fabric Prometheus endpoints                |
+
+---
+
+## 🚀 Key Learnings
+
+* Fabric on Kubernetes requires **DNS consistency**
+* Fabric CA is essential for **production-grade identity**
+* Observability is critical for blockchain ops
+* CI/CD pipelines can fully automate blockchain lifecycle
+
+---
+
+## 📈 Future Enhancements
+
+* Multi-org network (Org2, Org3)
+* GitOps with ArgoCD
+* Advanced alerting (Alertmanager)
+* DevSecOps integration (image scanning)
+* External access via Ingress + TLS
+
+---
+
+## 🏁 Conclusion
+
+This project demonstrates a **complete lifecycle of blockchain deployment** integrated with:
+
+* DevOps practices
+* CI/CD automation
+* Monitoring & observability
+
+It reflects a **production-aligned architecture** rather than a basic lab setup.
+
+---
